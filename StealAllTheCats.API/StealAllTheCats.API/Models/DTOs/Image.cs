@@ -5,21 +5,21 @@
         private static readonly string _prefix = "https://cdn2.thecatapi.com/images/";
         private static readonly string _suffix = ".jpg";
 
-        public string Id { get; set; } = string.Empty;
-        public int Width { get; set; }
-        public int Height { get; set; }
-        public string Url { get; set; } = string.Empty;
+        public string id { get; set; } = string.Empty;
+        public int width { get; set; }
+        public int height { get; set; }
+        public string url { get; set; } = string.Empty;
 
-        public virtual IList<Breed> Breeds { get; set; } = Array.Empty<Breed>();
+        public virtual IList<Breed> breeds { get; set; } = Array.Empty<Breed>();
 
         public string GetImageName()
         {
-            if (string.IsNullOrWhiteSpace(Url))
+            if (string.IsNullOrWhiteSpace(url))
             {
                 return string.Empty;
             }
 
-            string lastUrlPart = Url.Substring(_prefix.Length);
+            string lastUrlPart = url.Substring(_prefix.Length);
 
             int imageNameLength = lastUrlPart.Length - _suffix.Length;
 

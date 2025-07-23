@@ -2,6 +2,6 @@
 {
     public class Breed
     {
-        public string Temperament {  get; set; } = string.Empty;
+        public string temperament {  get; set; } = string.Empty;
     }
 }

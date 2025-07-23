@@ -21,11 +21,20 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 #region requests
-app.MapPost("/cats/fetch", () =>
+app.MapPost("/cats/fetch",async (ICatService catService) =>
+{
+    var images = await catService.GetImages(10, "live_JjS14tf7HhTCCvlq98caJMrhXkykVmAwlnD5yyHcIEjbzgImrX3cQnKosQbrBrwX");
+    
+    return images;
+})
+.WithName("FetchCats")
+.WithOpenApi();
+
+app.MapGet("/jobs/{id}", (string id) =>
 {
 
 })
-.WithName("FetchCats")
+.WithName("GetJobStatusById")
 .WithOpenApi();
 
 app.MapGet("/cats/{id}", (string id) =>
@@ -44,8 +53,3 @@ app.MapGet("/cats", (string tag = "", int page = 1, int pageSize = 10) =>
 #endregion
 
 app.Run();
-
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

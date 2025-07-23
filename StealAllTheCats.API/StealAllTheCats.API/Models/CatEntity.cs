@@ -15,9 +15,9 @@ namespace StealAllTheCats.API.Models
 
         public CatEntity(Image image)
         {
-            CatId = image.Id;
-            Width = image.Width;
-            Height = image.Height;
+            CatId = image.id;
+            Width = image.width;
+            Height = image.height;
             Image = image.GetImageName();
         }
     }

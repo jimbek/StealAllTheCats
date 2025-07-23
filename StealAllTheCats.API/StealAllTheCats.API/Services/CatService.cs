@@ -7,12 +7,12 @@ namespace StealAllTheCats.API.Services
     {
         private static HttpClient httpClient = new()
         {
-            BaseAddress = new Uri("https://api.thecatapi.com/v1"),
+            BaseAddress = new Uri("https://api.thecatapi.com"),
         };
 
         public async Task<List<Image>> GetImages(int limit, string apiKey)
         {
-            using HttpResponseMessage response = await httpClient.GetAsync($"images/search?limit={limit}&api_key={apiKey}");
+            using HttpResponseMessage response = await httpClient.GetAsync($"v1/images/search?limit={limit}&api_key={apiKey}");
 
             if (response.IsSuccessStatusCode)
             {
