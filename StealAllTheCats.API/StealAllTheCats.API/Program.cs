@@ -20,25 +20,28 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
+#region requests
+app.MapPost("/cats/fetch", () =>
 {
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
 })
-.WithName("GetWeatherForecast")
+.WithName("FetchCats")
 .WithOpenApi();
+
+app.MapGet("/cats/{id}", (string id) =>
+{
+    
+})
+.WithName("GetCatById")
+.WithOpenApi();
+
+app.MapGet("/cats", (string tag = "", int page = 1, int pageSize = 10) =>
+{
+
+})
+.WithName("GetCatsByTag")
+.WithOpenApi();
+#endregion
 
 app.Run();
 
