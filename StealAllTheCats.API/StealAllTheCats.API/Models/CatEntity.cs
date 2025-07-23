@@ -1,4 +1,6 @@
-﻿namespace StealAllTheCats.API.Models
+﻿using StealAllTheCats.API.Models.DTOs;
+
+namespace StealAllTheCats.API.Models
 {
     public class CatEntity
     {
@@ -8,5 +10,15 @@
         public int Height { get; set; }
         public string Image { get; set; } = string.Empty;
         public DateTime Created { get; set; } = DateTime.UtcNow;
+
+        public CatEntity() { }
+
+        public CatEntity(Image image)
+        {
+            CatId = image.Id;
+            Width = image.Width;
+            Height = image.Height;
+            Image = image.GetImageName();
+        }
     }
 }
