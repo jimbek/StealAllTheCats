@@ -14,6 +14,7 @@ builder
     .Services
     .AddScoped<ICatRepository, CatRepository>()
     .AddScoped<ITagRepository, TagRepository>()
+    .AddScoped<IUnitOfWork, UnitOfWork>()
     .AddSingleton<ICatService, CatService>();
 
 // Add services to the container.
@@ -34,7 +35,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 #region requests
-app.MapPost("/cats/fetch", async (ICatService catService, ICatRepository catRepository, ITagRepository tagRepository) =>
+app.MapPost("/cats/fetch", async (ICatService catService, IUnitOfWork unitOfWork) =>
 {
     var images = await catService.GetImages(5, "live_JjS14tf7HhTCCvlq98caJMrhXkykVmAwlnD5yyHcIEjbzgImrX3cQnKosQbrBrwX");
     
@@ -44,27 +45,27 @@ app.MapPost("/cats/fetch", async (ICatService catService, ICatRepository catRepo
     {
         var cat = new CatEntity(image);
 
-        bool catExists = await catRepository.ExistsAsync(cat.CatId);
+        bool catExists = await unitOfWork.CatRepository.ExistsAsync(cat.CatId);
 
         if (!catExists)
         {
-            await catRepository.AddAsync(cat);
+            await unitOfWork.CatRepository.AddAsync(cat);
         }
 
         foreach (var tag in cat.TagEntities)
         {
-            bool tagExists = await tagRepository.ExistsAsync(tag.Name);
+            bool tagExists = await unitOfWork.TagRepository.ExistsAsync(tag.Name);
 
             if (!tagExists)
             {
-                await tagRepository.AddAsync(tag);
+                await unitOfWork.TagRepository.AddAsync(tag);
             }
         }
 
         cats.Add(cat);
-
-        await catRepository.SaveChangesAsync();
     }
+
+    await unitOfWork.SaveChangesAsync();
 
     return cats;
 })
@@ -78,9 +79,9 @@ app.MapGet("/jobs/{id}", (string id) =>
 .WithName("GetJobStatusById")
 .WithOpenApi();
 
-app.MapGet("/cats/{id}", async (ICatRepository catRepository, string id) =>
+app.MapGet("/cats/{id}", async (IUnitOfWork unitOfWork, string id) =>
 {
-    return await catRepository.GetCatEntityAsync(id);
+    return await unitOfWork.CatRepository.GetCatEntityAsync(id);
 })
 .WithName("GetCatById")
 .WithOpenApi();

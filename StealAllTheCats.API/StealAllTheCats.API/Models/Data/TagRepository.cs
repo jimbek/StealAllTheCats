@@ -2,9 +2,14 @@
 
 namespace StealAllTheCats.API.Models.Data
 {
-    public class TagRepository : Repository, ITagRepository
+    public class TagRepository : ITagRepository
     {
-        public TagRepository(ApplicationDbContext context) : base(context) { }
+        private readonly ApplicationDbContext _context;
+
+        public TagRepository(ApplicationDbContext context)
+        {
+            _context = context;
+        }
 
         public async Task<bool> ExistsAsync(string name)
         {

@@ -2,9 +2,14 @@
 
 namespace StealAllTheCats.API.Models.Data
 {
-    public class CatRepository : Repository, ICatRepository
+    public class CatRepository : ICatRepository
     {
-        public CatRepository(ApplicationDbContext context) : base(context) { }
+        private readonly ApplicationDbContext _context;
+
+        public CatRepository(ApplicationDbContext context)
+        {
+            _context = context;
+        }
 
         public async Task<bool> ExistsAsync(string id)
         {
