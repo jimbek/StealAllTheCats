@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using StealAllTheCats.API.Models;
+using StealAllTheCats.API.Models.Data;
 using StealAllTheCats.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,7 +10,11 @@ builder
     .Services
     .AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(@"Server=localhost\SQLEXPRESS;Database=StealAllTheCats;Trusted_Connection=True;TrustServerCertificate=true;"));
 
-builder.Services.AddSingleton<ICatService, CatService>();
+builder
+    .Services
+    .AddScoped<ICatRepository, CatRepository>()
+    .AddScoped<ITagRepository, TagRepository>()
+    .AddSingleton<ICatService, CatService>();
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -29,7 +34,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 #region requests
-app.MapPost("/cats/fetch",async (ICatService catService) =>
+app.MapPost("/cats/fetch", async (ICatService catService, ICatRepository catRepository, ITagRepository tagRepository) =>
 {
     var images = await catService.GetImages(5, "live_JjS14tf7HhTCCvlq98caJMrhXkykVmAwlnD5yyHcIEjbzgImrX3cQnKosQbrBrwX");
     
@@ -52,14 +57,14 @@ app.MapGet("/jobs/{id}", (string id) =>
 .WithName("GetJobStatusById")
 .WithOpenApi();
 
-app.MapGet("/cats/{id}", (string id) =>
+app.MapGet("/cats/{id}", async (ICatRepository catRepository, int id) =>
 {
-    
+    return await catRepository.GetCatEntityAsync(id);
 })
 .WithName("GetCatById")
 .WithOpenApi();
 
-app.MapGet("/cats", (string tag = "", int page = 1, int pageSize = 10) =>
+app.MapGet("/cats", (ICatService catService, string tag = "", int page = 1, int pageSize = 10) =>
 {
 
 })
