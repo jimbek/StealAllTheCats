@@ -4,6 +4,6 @@ namespace StealAllTheCats.API.Services
 {
     public interface ICatService
     {
-        Task<List<Image>> GetImages(CancellationToken token, int limit, string apiKey);
+        Task<List<Image>> GetImages(int limit, string apiKey);
     }
 }

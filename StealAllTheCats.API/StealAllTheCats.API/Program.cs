@@ -1,4 +1,8 @@
+using Coravel;
+using Coravel.Queuing.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using StealAllTheCats.API.Jobs;
+using StealAllTheCats.API.Jobs.Payloads;
 using StealAllTheCats.API.Models;
 using StealAllTheCats.API.Models.Data;
 using StealAllTheCats.API.Models.DTOs;
@@ -6,16 +10,21 @@ using StealAllTheCats.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-#region services
+#region define services
 builder
     .Services
-    .AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(@"Server=localhost\SQLEXPRESS;Database=StealAllTheCats;Trusted_Connection=True;TrustServerCertificate=true;"));
+    .AddDbContext<ApplicationDbContext>(options => options.UseSqlServer("Server=localhost\\SQLEXPRESS;Database=StealAllTheCats;Trusted_Connection=True;TrustServerCertificate=true;"));
+
+builder
+    .Services
+    .AddQueue();
 
 builder
     .Services
     .AddScoped<ICatRepository, CatRepository>()
     .AddScoped<ITagRepository, TagRepository>()
     .AddScoped<IUnitOfWork, UnitOfWork>()
+    .AddTransient<BulkInsertToDb>()
     .AddSingleton<ICatService, CatService>();
 
 // Add services to the container.
@@ -35,40 +44,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-#region requests
-app.MapPost("/cats/fetch", async (CancellationToken token, ICatService catService, IUnitOfWork unitOfWork) =>
+#region define requests
+app.MapPost("/cats/fetch", (CancellationToken token, IQueue queue, ICatService catService, IUnitOfWork unitOfWork) =>
 {
-    var images = await catService.GetImages(token, 15, "live_JjS14tf7HhTCCvlq98caJMrhXkykVmAwlnD5yyHcIEjbzgImrX3cQnKosQbrBrwX");
-    
-    var cats = new List<CatEntity>();
+    var payload = new CancellationTokenPayload("live_JjS14tf7HhTCCvlq98caJMrhXkykVmAwlnD5yyHcIEjbzgImrX3cQnKosQbrBrwX");
 
-    foreach (var image in images)
-    {
-        var cat = new CatEntity(image);
+    Guid id = queue.QueueInvocableWithPayload<BulkInsertToDb, CancellationTokenPayload?>(payload);
 
-        bool catExists = await unitOfWork.CatRepository.ExistsAsync(token, cat.CatId);
-
-        if (!catExists)
-        {
-            await unitOfWork.CatRepository.AddAsync(token, cat);
-        }
-
-        foreach (var tag in cat.TagEntities)
-        {
-            bool tagExists = await unitOfWork.TagRepository.ExistsAsync(token, tag.Name);
-
-            if (!tagExists)
-            {
-                await unitOfWork.TagRepository.AddAsync(token, tag);
-            }
-        }
-
-        cats.Add(cat);
-    }
-
-    await unitOfWork.SaveChangesAsync(token);
-
-    return cats;
+    return id;
 })
 .WithName("FetchCats")
 .WithOpenApi();
@@ -80,9 +63,9 @@ app.MapGet("/jobs/{id}", (string id) =>
 .WithName("GetJobStatusById")
 .WithOpenApi();
 
-app.MapGet("/cats/{id}", async (CancellationToken token, IUnitOfWork unitOfWork, string id) =>
+app.MapGet("/cats/{id}", async (IUnitOfWork unitOfWork, string id) =>
 {
-    var cat = await unitOfWork.CatRepository.GetCatEntityAsync(token, id);
+    var cat = await unitOfWork.CatRepository.GetCatEntityAsync(id);
 
     if (cat == null)
     {

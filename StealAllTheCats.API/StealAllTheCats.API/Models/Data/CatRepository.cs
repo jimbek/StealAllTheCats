@@ -11,19 +11,19 @@ namespace StealAllTheCats.API.Models.Data
             _context = context;
         }
 
-        public async Task<bool> ExistsAsync(CancellationToken token, string id)
+        public async Task<bool> ExistsAsync(string id)
         {
-            return await _context.CatEntities.AnyAsync(x => x.CatId == id, token);
+            return await _context.CatEntities.AnyAsync(x => x.CatId == id);
         }
 
-        public async Task AddAsync(CancellationToken token, CatEntity cat)
+        public async Task AddAsync(CatEntity cat)
         {
-            await _context.CatEntities.AddAsync(cat, token);
+            await _context.CatEntities.AddAsync(cat);
         }
 
-        public async Task<CatEntity?> GetCatEntityAsync(CancellationToken token, string id)
+        public async Task<CatEntity?> GetCatEntityAsync(string id)
         {
-            return await _context.CatEntities.FirstOrDefaultAsync(x => x.CatId == id, token);
+            return await _context.CatEntities.FirstOrDefaultAsync(x => x.CatId == id);
         }
     }
 }

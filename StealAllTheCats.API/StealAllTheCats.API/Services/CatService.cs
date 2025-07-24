@@ -10,9 +10,9 @@ namespace StealAllTheCats.API.Services
             BaseAddress = new Uri("https://api.thecatapi.com"),
         };
 
-        public async Task<List<Image>> GetImages(CancellationToken token, int limit, string apiKey)
+        public async Task<List<Image>> GetImages(int limit, string apiKey)
         {
-            using HttpResponseMessage response = await httpClient.GetAsync($"v1/images/search?limit={limit}&api_key={apiKey}", token);
+            using HttpResponseMessage response = await httpClient.GetAsync($"v1/images/search?limit={limit}&api_key={apiKey}");
 
             if (response.IsSuccessStatusCode)
             {

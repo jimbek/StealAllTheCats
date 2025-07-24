@@ -2,8 +2,8 @@
 {
     public interface ICatRepository
     {
-        Task<bool> ExistsAsync(CancellationToken token, string id);
-        Task AddAsync(CancellationToken token, CatEntity cat);
-        Task<CatEntity?> GetCatEntityAsync(CancellationToken token, string id);
+        Task<bool> ExistsAsync(string id);
+        Task AddAsync(CatEntity cat);
+        Task<CatEntity?> GetCatEntityAsync(string id);
     }
 }
