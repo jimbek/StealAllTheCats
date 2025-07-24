@@ -4,6 +4,6 @@
     {
         Task<bool> ExistsAsync(string id);
         Task AddAsync(CatEntity cat);
-        Task<CatEntity?> GetCatEntityAsync(int id);
+        Task<CatEntity?> GetCatEntityAsync(string id);
     }
 }

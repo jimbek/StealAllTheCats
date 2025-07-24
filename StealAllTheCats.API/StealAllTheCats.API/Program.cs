@@ -78,7 +78,7 @@ app.MapGet("/jobs/{id}", (string id) =>
 .WithName("GetJobStatusById")
 .WithOpenApi();
 
-app.MapGet("/cats/{id}", async (ICatRepository catRepository, int id) =>
+app.MapGet("/cats/{id}", async (ICatRepository catRepository, string id) =>
 {
     return await catRepository.GetCatEntityAsync(id);
 })

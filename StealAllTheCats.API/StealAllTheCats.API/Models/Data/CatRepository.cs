@@ -16,9 +16,9 @@ namespace StealAllTheCats.API.Models.Data
             await _context.CatEntities.AddAsync(cat);
         }
 
-        public async Task<CatEntity?> GetCatEntityAsync(int id)
+        public async Task<CatEntity?> GetCatEntityAsync(string id)
         {
-            return await _context.CatEntities.FirstOrDefaultAsync(x => x.Id == id);
+            return await _context.CatEntities.FirstOrDefaultAsync(x => x.CatId == id);
         }
     }
 }
