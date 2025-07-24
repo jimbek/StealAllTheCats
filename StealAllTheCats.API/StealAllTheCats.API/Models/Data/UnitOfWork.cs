@@ -23,9 +23,9 @@
 
         public ITagRepository TagRepository { get { return _tagRepository; } }
 
-        public async Task<int> SaveChangesAsync()
+        public async Task<int> SaveChangesAsync(CancellationToken token)
         {
-            return await _context.SaveChangesAsync();
+            return await _context.SaveChangesAsync(token);
         }
     }
 }

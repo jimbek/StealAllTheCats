@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using StealAllTheCats.API.Models;
 using StealAllTheCats.API.Models.Data;
@@ -37,9 +36,9 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 #region requests
-app.MapPost("/cats/fetch", async (ICatService catService, IUnitOfWork unitOfWork) =>
+app.MapPost("/cats/fetch", async (CancellationToken token, ICatService catService, IUnitOfWork unitOfWork) =>
 {
-    var images = await catService.GetImages(5, "live_JjS14tf7HhTCCvlq98caJMrhXkykVmAwlnD5yyHcIEjbzgImrX3cQnKosQbrBrwX");
+    var images = await catService.GetImages(token, 15, "live_JjS14tf7HhTCCvlq98caJMrhXkykVmAwlnD5yyHcIEjbzgImrX3cQnKosQbrBrwX");
     
     var cats = new List<CatEntity>();
 
@@ -47,27 +46,27 @@ app.MapPost("/cats/fetch", async (ICatService catService, IUnitOfWork unitOfWork
     {
         var cat = new CatEntity(image);
 
-        bool catExists = await unitOfWork.CatRepository.ExistsAsync(cat.CatId);
+        bool catExists = await unitOfWork.CatRepository.ExistsAsync(token, cat.CatId);
 
         if (!catExists)
         {
-            await unitOfWork.CatRepository.AddAsync(cat);
+            await unitOfWork.CatRepository.AddAsync(token, cat);
         }
 
         foreach (var tag in cat.TagEntities)
         {
-            bool tagExists = await unitOfWork.TagRepository.ExistsAsync(tag.Name);
+            bool tagExists = await unitOfWork.TagRepository.ExistsAsync(token, tag.Name);
 
             if (!tagExists)
             {
-                await unitOfWork.TagRepository.AddAsync(tag);
+                await unitOfWork.TagRepository.AddAsync(token, tag);
             }
         }
 
         cats.Add(cat);
     }
 
-    await unitOfWork.SaveChangesAsync();
+    await unitOfWork.SaveChangesAsync(token);
 
     return cats;
 })
@@ -81,9 +80,9 @@ app.MapGet("/jobs/{id}", (string id) =>
 .WithName("GetJobStatusById")
 .WithOpenApi();
 
-app.MapGet("/cats/{id}", async (IUnitOfWork unitOfWork, string id) =>
+app.MapGet("/cats/{id}", async (CancellationToken token, IUnitOfWork unitOfWork, string id) =>
 {
-    var cat = await unitOfWork.CatRepository.GetCatEntityAsync(id);
+    var cat = await unitOfWork.CatRepository.GetCatEntityAsync(token, id);
 
     if (cat == null)
     {

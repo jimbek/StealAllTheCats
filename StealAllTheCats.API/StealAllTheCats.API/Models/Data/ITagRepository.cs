@@ -2,7 +2,7 @@
 {
     public interface ITagRepository
     {
-        Task<bool> ExistsAsync(string name);
-        Task AddAsync(TagEntity tag);
+        Task<bool> ExistsAsync(CancellationToken token, string name);
+        Task AddAsync(CancellationToken token, TagEntity tag);
     }
 }

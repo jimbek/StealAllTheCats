@@ -5,6 +5,6 @@
         ICatRepository CatRepository { get; }
         ITagRepository TagRepository { get; }
 
-        Task<int> SaveChangesAsync();
+        Task<int> SaveChangesAsync(CancellationToken token);
     }
 }

@@ -11,14 +11,14 @@ namespace StealAllTheCats.API.Models.Data
             _context = context;
         }
 
-        public async Task<bool> ExistsAsync(string name)
+        public async Task<bool> ExistsAsync(CancellationToken token, string name)
         {
-            return await _context.TagEntities.AnyAsync(x =>  x.Name == name);
+            return await _context.TagEntities.AnyAsync(x =>  x.Name == name, token);
         }
 
-        public async Task AddAsync(TagEntity tag)
+        public async Task AddAsync(CancellationToken token, TagEntity tag)
         {
-            await _context.TagEntities.AddAsync(tag);
+            await _context.TagEntities.AddAsync(tag, token);
         }
     }
 }
