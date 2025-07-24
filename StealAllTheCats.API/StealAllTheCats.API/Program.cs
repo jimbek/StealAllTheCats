@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using StealAllTheCats.API.Models;
 using StealAllTheCats.API.Models.Data;
+using StealAllTheCats.API.Models.DTOs;
 using StealAllTheCats.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -81,7 +83,16 @@ app.MapGet("/jobs/{id}", (string id) =>
 
 app.MapGet("/cats/{id}", async (IUnitOfWork unitOfWork, string id) =>
 {
-    return await unitOfWork.CatRepository.GetCatEntityAsync(id);
+    var cat = await unitOfWork.CatRepository.GetCatEntityAsync(id);
+
+    if (cat == null)
+    {
+        return Results.NotFound();
+    }
+
+    cat.Url = Image.Prefix + cat.Image + Image.Suffix;
+
+    return Results.Ok(cat);
 })
 .WithName("GetCatById")
 .WithOpenApi();
