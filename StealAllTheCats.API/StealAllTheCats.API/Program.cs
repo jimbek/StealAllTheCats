@@ -1,3 +1,4 @@
+using StealAllTheCats.API.Models;
 using StealAllTheCats.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,9 +24,16 @@ app.UseHttpsRedirection();
 #region requests
 app.MapPost("/cats/fetch",async (ICatService catService) =>
 {
-    var images = await catService.GetImages(10, "live_JjS14tf7HhTCCvlq98caJMrhXkykVmAwlnD5yyHcIEjbzgImrX3cQnKosQbrBrwX");
+    var images = await catService.GetImages(5, "live_JjS14tf7HhTCCvlq98caJMrhXkykVmAwlnD5yyHcIEjbzgImrX3cQnKosQbrBrwX");
     
-    return images;
+    var cats = new List<CatEntity>();
+
+    foreach (var image in images)
+    {
+        cats.Add(new CatEntity(image));
+    }
+
+    return cats;
 })
 .WithName("FetchCats")
 .WithOpenApi();
