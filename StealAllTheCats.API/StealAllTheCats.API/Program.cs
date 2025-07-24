@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder
     .Services
-    .AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=StealAllTheCats;Trusted_Connection=True;ConnectRetryCount=0"));
+    .AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(@"Server=localhost\SQLEXPRESS;Database=StealAllTheCats;Trusted_Connection=True;TrustServerCertificate=true;"));
 
 builder.Services.AddSingleton<ICatService, CatService>();
 
