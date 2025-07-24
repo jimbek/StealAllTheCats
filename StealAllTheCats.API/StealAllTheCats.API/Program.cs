@@ -1,7 +1,12 @@
+using Microsoft.EntityFrameworkCore;
 using StealAllTheCats.API.Models;
 using StealAllTheCats.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder
+    .Services
+    .AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=StealAllTheCats;Trusted_Connection=True;ConnectRetryCount=0"));
 
 builder.Services.AddSingleton<ICatService, CatService>();
 
@@ -59,5 +64,11 @@ app.MapGet("/cats", (string tag = "", int page = 1, int pageSize = 10) =>
 .WithName("GetCatsByTag")
 .WithOpenApi();
 #endregion
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await db.Database.MigrateAsync();
+}
 
 app.Run();
