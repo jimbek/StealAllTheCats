@@ -1,5 +1,6 @@
 ﻿using StealAllTheCats.API.Models.DTOs;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace StealAllTheCats.API.Models
 {
@@ -21,6 +22,9 @@ namespace StealAllTheCats.API.Models
 
         public DateTime Created { get; set; } = DateTime.UtcNow;
 
+        [NotMapped]
+        public virtual IList<TagEntity> TagEntities { get; set; } = [];
+
         public CatEntity() { }
 
         public CatEntity(Image image)
@@ -29,6 +33,25 @@ namespace StealAllTheCats.API.Models
             Width = image.width;
             Height = image.height;
             Image = image.GetImageName();
+
+            if (image.breeds != null)
+            {
+                foreach (var breed in image.breeds)
+                {
+                    if (!string.IsNullOrWhiteSpace(breed.temperament))
+                    {
+                        string[] temperaments = breed.temperament.Split(", ");
+
+                        foreach (string temperament in temperaments)
+                        {
+                            TagEntities.Add(new TagEntity
+                            {
+                                Name = temperament
+                            });
+                        }
+                    }
+                }
+            }
         }
     }
 }

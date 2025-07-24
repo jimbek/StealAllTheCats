@@ -4,6 +4,7 @@ using StealAllTheCats.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+#region services
 builder
     .Services
     .AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(@"Server=localhost\SQLEXPRESS;Database=StealAllTheCats;Trusted_Connection=True;TrustServerCertificate=true;"));
@@ -14,6 +15,7 @@ builder.Services.AddSingleton<ICatService, CatService>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+#endregion
 
 var app = builder.Build();
 
