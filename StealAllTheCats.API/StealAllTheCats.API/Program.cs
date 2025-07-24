@@ -42,7 +42,28 @@ app.MapPost("/cats/fetch", async (ICatService catService, ICatRepository catRepo
 
     foreach (var image in images)
     {
-        cats.Add(new CatEntity(image));
+        var cat = new CatEntity(image);
+
+        bool catExists = await catRepository.ExistsAsync(cat.CatId);
+
+        if (!catExists)
+        {
+            await catRepository.AddAsync(cat);
+        }
+
+        foreach (var tag in cat.TagEntities)
+        {
+            bool tagExists = await tagRepository.ExistsAsync(tag.Name);
+
+            if (!tagExists)
+            {
+                await tagRepository.AddAsync(tag);
+            }
+        }
+
+        cats.Add(cat);
+
+        await catRepository.SaveChangesAsync();
     }
 
     return cats;

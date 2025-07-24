@@ -1,8 +1,8 @@
 ﻿namespace StealAllTheCats.API.Models.Data
 {
-    public interface ITagRepository
+    public interface ITagRepository : IRepository
     {
         Task<bool> ExistsAsync(string name);
-        Task<int> AddAsync(TagEntity tag);
+        Task AddAsync(TagEntity tag);
     }
 }

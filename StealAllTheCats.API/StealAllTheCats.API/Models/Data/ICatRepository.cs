@@ -1,9 +1,9 @@
 ﻿namespace StealAllTheCats.API.Models.Data
 {
-    public interface ICatRepository
+    public interface ICatRepository : IRepository
     {
         Task<bool> ExistsAsync(string id);
-        Task<int> AddAsync(CatEntity cat);
+        Task AddAsync(CatEntity cat);
         Task<CatEntity?> GetCatEntityAsync(int id);
     }
 }
