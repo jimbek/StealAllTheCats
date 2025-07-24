@@ -23,6 +23,7 @@ builder
     .Services
     .AddScoped<ICatRepository, CatRepository>()
     .AddScoped<ITagRepository, TagRepository>()
+    .AddScoped<IJobRepository, JobRepository>()
     .AddScoped<IUnitOfWork, UnitOfWork>()
     .AddTransient<BulkInsertToDb>()
     .AddSingleton<ICatService, CatService>();
@@ -45,20 +46,32 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 #region define requests
-app.MapPost("/cats/fetch", (CancellationToken token, IQueue queue, ICatService catService, IUnitOfWork unitOfWork) =>
+app.MapPost("/cats/fetch", async (CancellationToken token, IQueue queue, ICatService catService, IUnitOfWork unitOfWork) =>
 {
-    var payload = new CancellationTokenPayload("live_JjS14tf7HhTCCvlq98caJMrhXkykVmAwlnD5yyHcIEjbzgImrX3cQnKosQbrBrwX");
+    Guid id = Guid.NewGuid();
 
-    Guid id = queue.QueueInvocableWithPayload<BulkInsertToDb, CancellationTokenPayload?>(payload);
+    var payload = new CancellationTokenPayload(id, "live_JjS14tf7HhTCCvlq98caJMrhXkykVmAwlnD5yyHcIEjbzgImrX3cQnKosQbrBrwX");
+
+    queue.QueueInvocableWithPayload<BulkInsertToDb, CancellationTokenPayload?>(payload);
+
+    await unitOfWork.JobRepository.AddAsync(new Job(id));
+    await unitOfWork.SaveChangesAsync();
 
     return id;
 })
 .WithName("FetchCats")
 .WithOpenApi();
 
-app.MapGet("/jobs/{id}", (string id) =>
+app.MapGet("/jobs/{id}", async (IUnitOfWork unitOfWork, string id) =>
 {
+    var job = await unitOfWork.JobRepository.GetJobAsync(Guid.Parse(id));
 
+    if (job == null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(Enum.GetName(job.Status));
 })
 .WithName("GetJobStatusById")
 .WithOpenApi();

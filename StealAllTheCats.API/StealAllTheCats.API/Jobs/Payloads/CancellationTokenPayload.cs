@@ -2,10 +2,12 @@
 {
     public class CancellationTokenPayload
     {
+        public Guid Id { get; set; }
         public string ApiKey { get; set; } = string.Empty;
 
-        public CancellationTokenPayload(string key)
+        public CancellationTokenPayload(Guid id, string key)
         {
+            Id = id;
             ApiKey = key;
         }
     }

@@ -27,34 +27,46 @@ namespace StealAllTheCats.API.Jobs
                 throw new ArgumentNullException(nameof(Payload));
             }
 
-            var images = await _catService.GetImages(15, Payload.ApiKey);
+            await _unitOfWork.JobRepository.UpdateIfExistsAsync(Payload.Id, Status.Started);
+            await _unitOfWork.SaveChangesAsync();
 
-            var cats = new List<CatEntity>();
-
-            foreach (var image in images)
+            try
             {
-                var cat = new CatEntity(image);
+                var images = await _catService.GetImages(15, Payload.ApiKey);
 
-                bool catExists = await _unitOfWork.CatRepository.ExistsAsync(cat.CatId);
+                var cats = new List<CatEntity>();
 
-                if (!catExists)
+                foreach (var image in images)
                 {
-                    await _unitOfWork.CatRepository.AddAsync(cat);
-                }
+                    var cat = new CatEntity(image);
 
-                foreach (var tag in cat.TagEntities)
-                {
-                    bool tagExists = await _unitOfWork.TagRepository.ExistsAsync(tag.Name);
+                    bool catExists = await _unitOfWork.CatRepository.ExistsAsync(cat.CatId);
 
-                    if (!tagExists)
+                    if (!catExists)
                     {
-                        await _unitOfWork.TagRepository.AddAsync(tag);
+                        await _unitOfWork.CatRepository.AddAsync(cat);
                     }
+
+                    foreach (var tag in cat.TagEntities)
+                    {
+                        bool tagExists = await _unitOfWork.TagRepository.ExistsAsync(tag.Name);
+
+                        if (!tagExists)
+                        {
+                            await _unitOfWork.TagRepository.AddAsync(tag);
+                        }
+                    }
+
+                    cats.Add(cat);
                 }
 
-                cats.Add(cat);
+                await _unitOfWork.JobRepository.UpdateIfExistsAsync(Payload.Id, Status.Succeed);
             }
-
+            catch (Exception)
+            {
+                await _unitOfWork.JobRepository.UpdateIfExistsAsync(Payload.Id, Status.Failed);
+            }
+            
             await _unitOfWork.SaveChangesAsync();
         }
     }

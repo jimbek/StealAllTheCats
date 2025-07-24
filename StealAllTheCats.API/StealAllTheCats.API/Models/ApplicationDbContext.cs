@@ -6,6 +6,7 @@ namespace StealAllTheCats.API.Models
     {
         public DbSet<CatEntity> CatEntities { get; set; }
         public DbSet<TagEntity> TagEntities { get; set; }
+        public DbSet<Job> Jobs { get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
