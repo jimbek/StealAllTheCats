@@ -1,12 +1,9 @@
 using Coravel;
-using Coravel.Queuing.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using StealAllTheCats.API;
 using StealAllTheCats.API.Jobs;
-using StealAllTheCats.API.Jobs.Payloads;
 using StealAllTheCats.API.Models;
 using StealAllTheCats.API.Models.Data;
-using StealAllTheCats.API.Models.DTOs;
 using StealAllTheCats.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -59,43 +56,7 @@ app.UseHttpsRedirection();
 #endregion
 
 #region define endpoints
-app.MapPost("/cats/fetch", async (CancellationToken token, IQueue queue, ICatService catService, IUnitOfWork unitOfWork) =>
-{
-    Guid id = Guid.NewGuid();
-
-    var payload = new BulkInsertToDbPayload(id, builder.Configuration["ApiKey"] ?? string.Empty);
-
-    queue.QueueInvocableWithPayload<BulkInsertToDb, BulkInsertToDbPayload?>(payload);
-
-    await unitOfWork.JobRepository.AddAsync(new Job(id));
-    await unitOfWork.SaveChangesAsync();
-
-    return id;
-})
-.WithName("FetchCats")
-.WithTags("Jobs")
-.WithOpenApi();
-
-app.MapGet("/jobs/{id}", async (IUnitOfWork unitOfWork, string id) =>
-{
-    if (string.IsNullOrWhiteSpace(id))
-    {
-        return Results.BadRequest();
-    }
-
-    var job = await unitOfWork.JobRepository.GetJobAsync(Guid.Parse(id));
-
-    if (job == null)
-    {
-        return Results.NotFound();
-    }
-
-    return Results.Ok(Enum.GetName(job.Status));
-})
-.WithName("GetJobStatusById")
-.WithTags("Jobs")
-.WithOpenApi();
-
+app.MapJobEndpoints(builder);
 app.MapCatEndpoints();
 #endregion
 
