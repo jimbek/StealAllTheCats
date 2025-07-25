@@ -50,9 +50,9 @@ app.MapPost("/cats/fetch", async (CancellationToken token, IQueue queue, ICatSer
 {
     Guid id = Guid.NewGuid();
 
-    var payload = new CancellationTokenPayload(id, "live_JjS14tf7HhTCCvlq98caJMrhXkykVmAwlnD5yyHcIEjbzgImrX3cQnKosQbrBrwX");
+    var payload = new BulkInsertToDbPayload(id, "live_JjS14tf7HhTCCvlq98caJMrhXkykVmAwlnD5yyHcIEjbzgImrX3cQnKosQbrBrwX");
 
-    queue.QueueInvocableWithPayload<BulkInsertToDb, CancellationTokenPayload?>(payload);
+    queue.QueueInvocableWithPayload<BulkInsertToDb, BulkInsertToDbPayload?>(payload);
 
     await unitOfWork.JobRepository.AddAsync(new Job(id));
     await unitOfWork.SaveChangesAsync();
@@ -76,25 +76,28 @@ app.MapGet("/jobs/{id}", async (IUnitOfWork unitOfWork, string id) =>
 .WithName("GetJobStatusById")
 .WithOpenApi();
 
-app.MapGet("/cats/{id}", async (IUnitOfWork unitOfWork, string id) =>
+app.MapGet("/cats/{id}", async (IUnitOfWork unitOfWork, CancellationToken token, string id) =>
 {
-    var cat = await unitOfWork.CatRepository.GetCatEntityAsync(id);
+    var cat = await unitOfWork.CatRepository.GetCatEntityAsync(token, id);
 
     if (cat == null)
     {
         return Results.NotFound();
     }
 
-    cat.Url = Image.Prefix + cat.Image + Image.Suffix;
-
-    return Results.Ok(cat);
+    return Results.Ok(new Image(cat));
 })
 .WithName("GetCatById")
 .WithOpenApi();
 
-app.MapGet("/cats", (ICatService catService, string tag = "", int page = 1, int pageSize = 10) =>
+app.MapGet("/cats", async (ICatService catService, IUnitOfWork unitOfWork, CancellationToken token, string tag = "", int page = 1, int pageSize = 10) =>
 {
+    if (page < 1 || pageSize < 1)
+    {
+        return Results.BadRequest();
+    }
 
+    return Results.Ok(await unitOfWork.CatRepository.GetCatEntitiesAsync(token, page, pageSize));
 })
 .WithName("GetCatsByTag")
 .WithOpenApi();

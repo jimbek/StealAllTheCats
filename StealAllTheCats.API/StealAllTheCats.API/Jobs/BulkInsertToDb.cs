@@ -6,9 +6,9 @@ using StealAllTheCats.API.Services;
 
 namespace StealAllTheCats.API.Jobs
 {
-    public class BulkInsertToDb : IInvocable, IInvocableWithPayload<CancellationTokenPayload?>
+    public class BulkInsertToDb : IInvocable, IInvocableWithPayload<BulkInsertToDbPayload?>
     {
-        public CancellationTokenPayload? Payload { get; set; }
+        public BulkInsertToDbPayload? Payload { get; set; }
 
         private ICatService _catService;
 

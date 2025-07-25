@@ -23,9 +23,6 @@ namespace StealAllTheCats.API.Models
         public DateTime Created { get; set; } = DateTime.UtcNow;
 
         [NotMapped]
-        public string Url { get; set; } = string.Empty;
-
-        [NotMapped]
         public virtual IList<TagEntity> TagEntities { get; set; } = [];
 
         public CatEntity() { }

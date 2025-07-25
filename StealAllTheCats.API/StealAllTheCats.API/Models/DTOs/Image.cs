@@ -2,11 +2,11 @@
 {
     public class Image
     {
-        public static readonly string Prefix = "https://cdn2.thecatapi.com/images/";
-        public static readonly string Suffix = ".jpg";
+        private static readonly string _prefix = "https://cdn2.thecatapi.com/images/";
+        private static readonly string _suffix = ".jpg";
 
-        private static int _prefixLength = Prefix.Length;
-        private static int _suffixLength = Suffix.Length;
+        private static int _prefixLength = _prefix.Length;
+        private static int _suffixLength = _suffix.Length;
 
         public string id { get; set; } = string.Empty;
         public int width { get; set; }
@@ -14,6 +14,16 @@
         public string url { get; set; } = string.Empty;
 
         public virtual IList<Breed> breeds { get; set; } = Array.Empty<Breed>();
+
+        public Image() { }
+
+        public Image(CatEntity entity)
+        {
+            id = entity.CatId;
+            width = entity.Width;
+            height = entity.Height;
+            url = _prefix + entity.Image + _suffix;
+        }
 
         public string GetImageName()
         {
