@@ -22,7 +22,7 @@ namespace StealAllTheCats.API.Jobs
 
         public async Task Invoke()
         {
-            if (Payload == null)
+            if (Payload == null || Payload.Id.Equals(Guid.Empty) || string.IsNullOrWhiteSpace(Payload.ApiKey))
             {
                 throw new ArgumentNullException(nameof(Payload));
             }
@@ -32,7 +32,7 @@ namespace StealAllTheCats.API.Jobs
 
             try
             {
-                var images = await _catService.GetImages(15, Payload.ApiKey);
+                var images = await _catService.GetImages(25, Payload.ApiKey);
 
                 var cats = new List<CatEntity>();
 

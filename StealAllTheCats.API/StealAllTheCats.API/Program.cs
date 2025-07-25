@@ -44,6 +44,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 #endregion
 
+#region define app settings
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -54,6 +55,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+#endregion
 
 #region define requests
 app.MapPost("/cats/fetch", async (CancellationToken token, IQueue queue, ICatService catService, IUnitOfWork unitOfWork) =>
@@ -74,6 +76,11 @@ app.MapPost("/cats/fetch", async (CancellationToken token, IQueue queue, ICatSer
 
 app.MapGet("/jobs/{id}", async (IUnitOfWork unitOfWork, string id) =>
 {
+    if (string.IsNullOrWhiteSpace(id))
+    {
+        return Results.BadRequest();
+    }
+
     var job = await unitOfWork.JobRepository.GetJobAsync(Guid.Parse(id));
 
     if (job == null)
@@ -88,6 +95,11 @@ app.MapGet("/jobs/{id}", async (IUnitOfWork unitOfWork, string id) =>
 
 app.MapGet("/cats/{id}", async (IUnitOfWork unitOfWork, CancellationToken token, string id) =>
 {
+    if (string.IsNullOrWhiteSpace(id))
+    {
+        return Results.BadRequest();
+    }
+
     var cat = await unitOfWork.CatRepository.GetCatEntityAsync(token, id);
 
     if (cat == null)
@@ -100,23 +112,27 @@ app.MapGet("/cats/{id}", async (IUnitOfWork unitOfWork, CancellationToken token,
 .WithName("GetCatById")
 .WithOpenApi();
 
-app.MapGet("/cats", async (ICatService catService, IUnitOfWork unitOfWork, CancellationToken token, string tag = "", int page = 1, int pageSize = 10) =>
+app.MapGet("/cats", async (IUnitOfWork unitOfWork, CancellationToken token, int page = 1, int pageSize = 10) =>
 {
     if (page < 1 || pageSize < 1)
     {
         return Results.BadRequest();
     }
 
-    return Results.Ok(await unitOfWork.CatRepository.GetCatEntitiesAsync(token, page, pageSize));
+    var cats = await unitOfWork.CatRepository.GetCatEntitiesAsync(token, page, pageSize);
+
+    return Results.Ok(cats.Select(x => new Image(x)));
 })
 .WithName("GetCatsByTag")
 .WithOpenApi();
 #endregion
 
+#region apply migrations
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     await db.Database.MigrateAsync();
 }
+#endregion
 
 app.Run();
