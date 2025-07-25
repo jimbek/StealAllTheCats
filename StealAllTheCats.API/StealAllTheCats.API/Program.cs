@@ -13,7 +13,17 @@ var builder = WebApplication.CreateBuilder(args);
 #region define services
 builder
     .Services
-    .AddDbContext<ApplicationDbContext>(options => options.UseSqlServer("Server=localhost\\SQLEXPRESS;Database=StealAllTheCats;Trusted_Connection=True;TrustServerCertificate=true;"));
+    .AddDbContext<ApplicationDbContext>(options =>
+    {
+        string? db = builder.Configuration.GetConnectionString("Db");
+
+        if (string.IsNullOrWhiteSpace(db))
+        {
+            throw new InvalidOperationException("Connection string 'Db'" + " not found.");
+        }
+
+        options.UseSqlServer(db);
+    });
 
 builder
     .Services
@@ -50,7 +60,7 @@ app.MapPost("/cats/fetch", async (CancellationToken token, IQueue queue, ICatSer
 {
     Guid id = Guid.NewGuid();
 
-    var payload = new BulkInsertToDbPayload(id, "live_JjS14tf7HhTCCvlq98caJMrhXkykVmAwlnD5yyHcIEjbzgImrX3cQnKosQbrBrwX");
+    var payload = new BulkInsertToDbPayload(id, builder.Configuration["ApiKey"] ?? string.Empty);
 
     queue.QueueInvocableWithPayload<BulkInsertToDb, BulkInsertToDbPayload?>(payload);
 
